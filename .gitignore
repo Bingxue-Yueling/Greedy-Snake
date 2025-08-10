@@ -1,0 +1,58 @@
+# --- CMake 构建目录 ---
+build/
+[Bb]uild/
+[Cc]make[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+[Oo]utput/
+*.sln
+*.vcxproj*
+*.user
+*.filters
+*.opensdf
+*.sdf
+*.suo
+*.xcodeproj
+*.xcworkspace
+
+# --- 编译生成文件 ---
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+
+# --- CMake 缓存和临时文件 ---
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+*.cmake
+Makefile
+
+# --- IDE 配置文件 ---
+.vscode/
+.idea/
+*.code-workspace
+.clangd/
+c_cpp_properties.json
+
+# --- 系统文件 ---
+.DS_Store
+Thumbs.db
+
+# --- 日志和测试输出 ---
+*.log
+*.tmp
+test-results/
+
+# --- 其他 ---
+[Dd]emo*.txt
+[Tt]ext*.txt
