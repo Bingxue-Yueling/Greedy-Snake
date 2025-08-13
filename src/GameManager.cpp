@@ -8,37 +8,44 @@ GameManager::GameManager(int r, int c) : row(r), col(c), snake(r / 2, c / 2)
 {
 }
 
-GameManager::~GameManager()
-{
-}
-
-void GameManager::Start()
+void GameManager::GameStart()
 {
     NextTarget();
-    Update();
+    StartAutoMove();
+    GameUpdate();
 }
-void GameManager::Update()
-{
-    while (true)
-    {
-        PrintUtil::ClearScreen();
-        UpdateMap();
-        std::cout << "按 'q' 退出游戏" << std::endl;
 
+void GameManager::GameOver()
+{
+    gameOver = true; // 设置游戏结束标志
+    StopAutoMove();
+    PrintUtil::ColorText("Game Over!", 4);
+    _getch();
+    PrintUtil::ClearScreen();
+}
+
+void GameManager::GameUpdate()
+{
+    while (!gameOver)
+    {
         char key = _getch();
         switch (key)
         {
         case 'w':
-            snake.Move(-1, 0);
+            snake.dir[0] = -1;
+            snake.dir[1] = 0;
             break;
         case 's':
-            snake.Move(1, 0);
+            snake.dir[0] = 1;
+            snake.dir[1] = 0;
             break;
         case 'a':
-            snake.Move(0, -1);
+            snake.dir[0] = 0;
+            snake.dir[1] = -1;
             break;
         case 'd':
-            snake.Move(0, 1);
+            snake.dir[0] = 0;
+            snake.dir[1] = 1;
             break;
         case 'q':
             break;
@@ -108,7 +115,46 @@ bool GameManager::CheckCollision()
     {
         return true; // 碰撞
     }
-
     // 检查蛇头是否碰到自己
     return snake.CheckCollision();
+}
+
+void GameManager::StartAutoMove()
+{
+    if (!autoMoveThread || !autoMoveThread->joinable())
+    {
+        autoMoveThread = std::make_unique<std::thread>(&GameManager::UpdateAutoMove, this);
+        autoMoveThread->detach();
+    }
+}
+
+void GameManager::UpdateAutoMove()
+{
+    while (autoMove)
+    {
+        std::this_thread::sleep_for(autoMoveInterval);
+        if (CheckCollision())
+        {
+            GameOver();
+        }
+        snake.Move();
+        PrintUtil::ClearScreen();
+        UpdateMap();
+    }
+}
+
+// 安全停止函数
+void GameManager::StopAutoMove()
+{
+    autoMove = false;
+    if (autoMoveThread && autoMoveThread->joinable())
+    {
+        autoMoveThread->join();
+    }
+    autoMoveThread.reset();
+}
+
+GameManager::~GameManager()
+{
+    StopAutoMove(); // 确保在析构时停止自动移动线程
 }

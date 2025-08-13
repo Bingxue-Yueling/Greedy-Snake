@@ -15,12 +15,17 @@ bool Snake::CheckCollision()
     for (size_t i = 1; i < snakeBody.size(); ++i)
     {
         // 检查蛇头是否碰到自己
-        if (head == snakeBody[i])
+        if (head == snakeBody[i] && i == 1)
         {
             return true; // 碰撞
         }
     }
     return false; // 未碰撞
+}
+
+void Snake::Move()
+{
+    Move(dir[0], dir[1]);
 }
 
 void Snake::Move(int dx, int dy)

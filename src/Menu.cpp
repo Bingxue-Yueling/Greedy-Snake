@@ -1,4 +1,7 @@
 #include "Menu.h"
+#include <conio.h>
+#include <GameManager.h>
+#include <iomanip>
 
 Menu::Menu()
 {
@@ -10,7 +13,7 @@ Menu::~Menu()
 	// delete fg_pattern, bg_pattern;
 }
 
-void Menu::UpdateMenu(int selectId, bool delay)
+void Menu::UpdateMenuFrame(vector<string> options, int selectId, bool delay)
 {
 	int sleepTime = 50;
 	cout << "** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **" << endl;
@@ -66,37 +69,36 @@ void Menu::UpdateMenu(int selectId, bool delay)
 	if (delay)
 		Sleep(sleepTime);
 	cout << "**                                                                                 **" << endl;
-	if (selectId == 0)
+
+	for (std::vector<string>::iterator option = options.begin(); option != options.end(); ++option)
 	{
-		PrintUtil::SetColor(2);
+		// 去掉星号后包含81个空格
+		int leftPadding = (81 - option->length()) / 2;
+		int rightPadding = 81 - option->length() - leftPadding;
+		cout << "**" << string(leftPadding, ' ');
+		if (selectId == option - options.begin())
+		{
+			PrintUtil::SetColor(2);
+		}
+		cout << *option;
+		if (selectId == option - options.begin())
+		{
+			PrintUtil::SetColor(6);
+		}
+		cout << string(rightPadding, ' ') << "**" << endl;
+
+		// cout << "**                              " << setw(21) << left << *option << "                              **" << endl;
+		if (delay)
+			Sleep(sleepTime);
 	}
-	cout << "**                                   Start  Game                                   **" << endl;
-	PrintUtil::SetColor(6);
-	if (delay)
-		Sleep(sleepTime);
-	if (selectId == 1)
-	{
-		PrintUtil::SetColor(2);
-	}
-	cout << "**                                     Options                                     **" << endl;
-	PrintUtil::SetColor(6);
-	if (delay)
-		Sleep(sleepTime);
-	if (selectId == 2)
-	{
-		PrintUtil::SetColor(2);
-	}
-	cout << "**                                    Exit Game                                    **" << endl;
-	PrintUtil::SetColor(6);
-	if (delay)
-		Sleep(sleepTime);
+
 	cout << "**                                                                                 **" << endl;
 	if (delay)
 		Sleep(sleepTime);
 	cout << "**                            @ Bingxue Yueling Studio                             **" << endl;
 	if (delay)
 		Sleep(sleepTime);
-	cout << "**                                 Date 2024-11-12                                 **" << endl;
+	cout << "**                                 Date 2025-08-11                                 **" << endl;
 	if (delay)
 		Sleep(sleepTime);
 	cout << "**                              All Right Reserved.                                **" << endl;
@@ -106,6 +108,163 @@ void Menu::UpdateMenu(int selectId, bool delay)
 	if (delay)
 		Sleep(sleepTime);
 	cout << "** * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * **" << endl;
+}
+
+void Menu::UpdateMainMenu(int selectId, bool delay)
+{
+	UpdateMenuFrame(mainMenu, selectId, delay);
+}
+
+void Menu::UpdateOptionMenu(int selectId, bool delay)
+{
+	UpdateMenuFrame(option, selectId, delay);
+}
+
+void Menu::UpdateHelpMenu(int selectId, bool delay)
+{
+	UpdateMenuFrame(help, selectId, delay);
+}
+
+void Menu::SelectMainMenu()
+{
+	int selectId = 0;
+	UpdateMainMenu(selectId, true);
+	while (true)
+	{
+		char key = _getch();
+		Utils::PrintUtil::ClearScreen();
+		switch (key)
+		{
+		case 'w':
+			selectId += mainMenu.size() - 1;
+			selectId %= mainMenu.size();
+			break;
+		case 's':
+			selectId++;
+			selectId %= mainMenu.size();
+			break;
+		case '\r':
+		{
+			switch (selectId)
+			{
+			case 0:
+			{
+				Managers::GameManager gameManager(10, 10);
+				gameManager.GameStart();
+				cout << "<- Game Start" << endl;
+				break;
+			}
+			case 1:
+			{
+				SelectOptionMenu();
+				break;
+			}
+			case 2:
+			{
+				SelectHelpMenu();
+				break;
+			}
+			case 3:
+				UpdateMainMenu(selectId);
+				cout << endl;
+				cout << "Please press any key to exit..." << endl;
+				_getch(); // Wait for any key press before exiting
+				return;	  // Exit the program
+			default:
+				break;
+			}
+			break;
+		}
+		case 'q':
+			UpdateMainMenu(selectId);
+			cout << endl;
+			cout << "Please press any key to exit..." << endl;
+			_getch(); // Wait for any key press before exiting
+			return;	  // Exit the program
+		default:
+			break;
+		}
+		UpdateMainMenu(selectId);
+	}
+}
+
+void Menu::SelectOptionMenu()
+{
+	int selectId = 0;
+	UpdateOptionMenu(selectId, true);
+	while (true)
+	{
+		char key = _getch();
+		Utils::PrintUtil::ClearScreen();
+		switch (key)
+		{
+		case 'w':
+			selectId += option.size() - 1;
+			selectId %= option.size();
+			break;
+		case 's':
+			selectId++;
+			selectId %= option.size();
+			break;
+		case '\r':
+			switch (selectId)
+			{
+			case 0:
+				_getch();
+				return;
+			case 1:
+				mapSize[0] = 20;
+				mapSize[1] = 20;
+				_getch();
+				return;
+			case 2:
+				mapSize[0] = 30;
+				mapSize[1] = 30;
+				_getch();
+				return;
+			case 3:
+				return;
+			default:
+				break;
+			}
+			break;
+		case 'q':
+			return;
+			break;
+		default:
+			break;
+		}
+		UpdateOptionMenu(selectId);
+	}
+}
+
+void Menu::SelectHelpMenu()
+{
+	int selectId = 0;
+	UpdateHelpMenu(selectId, true);
+	while (true)
+	{
+		char key = _getch();
+		Utils::PrintUtil::ClearScreen();
+		switch (key)
+		{
+		case 'w':
+			selectId += help.size() - 1;
+			selectId %= help.size();
+			break;
+		case 's':
+			selectId++;
+			selectId %= help.size();
+			break;
+		case '\r':
+			return;
+		case 'q':
+			return;
+		default:
+			break;
+		}
+		UpdateHelpMenu(selectId);
+	}
 }
 
 // 在屏幕输出字符

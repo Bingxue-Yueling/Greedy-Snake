@@ -10,6 +10,7 @@ class Snake
 private:
     /* data */
 public:
+    int dir[2]{-1, 0};
     std::vector<std::pair<int, int>> snakeBody;
     Snake(int startX, int startY);
     ~Snake();
@@ -48,5 +49,7 @@ public:
     {
         snakeBody.push_back(segment);
     }
+
+    void Move();
     void Move(int dx, int dy);
 };

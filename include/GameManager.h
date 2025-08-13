@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <utility>
+#include <thread>
 
 #include "Snake.h"
 
@@ -19,10 +20,19 @@ namespace Managers
 
 		GameManager(int r = 10, int c = 10);
 		~GameManager();
-		void Start();
-		void Update();
+		void GameStart();
+		void GameOver();
+		void GameUpdate();
 		void UpdateMap();
 		void NextTarget();
 		bool CheckCollision();
+		void StartAutoMove();
+		void UpdateAutoMove();
+		void StopAutoMove();
+
+	private:
+		bool gameOver, autoMove = true;
+		std::chrono::milliseconds autoMoveInterval = std::chrono::milliseconds(1000);
+		std::unique_ptr<std::thread> autoMoveThread;
 	};
 }
