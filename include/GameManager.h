@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <utility>
 #include <thread>
+#include <mutex>
+#include <atomic>
 
 #include "Snake.h"
 
@@ -31,8 +33,10 @@ namespace Managers
 		void StopAutoMove();
 
 	private:
-		bool gameOver, autoMove = true;
-		std::chrono::milliseconds autoMoveInterval = std::chrono::milliseconds(1000);
+		mutable std::mutex mutex_; // 添加互斥锁
+		std::atomic<bool> gameOver;
+		bool autoMove;
+		std::chrono::milliseconds autoMoveInterval;
 		std::unique_ptr<std::thread> autoMoveThread;
 	};
 }

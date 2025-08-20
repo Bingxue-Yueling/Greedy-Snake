@@ -1,10 +1,14 @@
 #include "GameManager.h"
 #include "PrintUtil.h"
+#include "LogUtil.h"
 
 using namespace Managers;
 using namespace Utils;
 
-GameManager::GameManager(int r, int c) : row(r), col(c), snake(r / 2, c / 2)
+GameManager::GameManager(int r, int c) : row(r), col(c),
+                                         snake(r / 2, c / 2),
+                                         autoMove(true),
+                                         autoMoveInterval(std::chrono::milliseconds(1000))
 {
 }
 
@@ -17,10 +21,10 @@ void GameManager::GameStart()
 
 void GameManager::GameOver()
 {
-    gameOver = true; // 设置游戏结束标志
     StopAutoMove();
+    gameOver = true; // 设置游戏结束标志
     PrintUtil::ColorText("Game Over!", 4);
-    _getch();
+    // _getch();
     PrintUtil::ClearScreen();
 }
 
@@ -28,34 +32,40 @@ void GameManager::GameUpdate()
 {
     while (!gameOver)
     {
-        char key = _getch();
-        switch (key)
+        if (_kbhit())
         {
-        case 'w':
-            snake.dir[0] = -1;
-            snake.dir[1] = 0;
-            break;
-        case 's':
-            snake.dir[0] = 1;
-            snake.dir[1] = 0;
-            break;
-        case 'a':
-            snake.dir[0] = 0;
-            snake.dir[1] = -1;
-            break;
-        case 'd':
-            snake.dir[0] = 0;
-            snake.dir[1] = 1;
-            break;
-        case 'q':
-            break;
-        default:
-            break;
-        }
-        if (target == snake.GetHead())
-        {
-            NextTarget();
-            snake.AddSegment(snake.GetTail()); // 增加蛇身
+
+            char key = _getch();
+
+            switch (key)
+            {
+            case 'w':
+                snake.dir[0] = -1;
+                snake.dir[1] = 0;
+                break;
+            case 's':
+                snake.dir[0] = 1;
+                snake.dir[1] = 0;
+                break;
+            case 'a':
+                snake.dir[0] = 0;
+                snake.dir[1] = -1;
+                break;
+            case 'd':
+                snake.dir[0] = 0;
+                snake.dir[1] = 1;
+                break;
+            case 'q':
+                break;
+            default:
+                break;
+            }
+
+            if (target == snake.GetHead())
+            {
+                NextTarget();
+                snake.AddSegment(snake.GetTail()); // 增加蛇身
+            }
         }
     }
 }
@@ -121,40 +131,53 @@ bool GameManager::CheckCollision()
 
 void GameManager::StartAutoMove()
 {
-    if (!autoMoveThread || !autoMoveThread->joinable())
+    if (!autoMoveThread)
     {
         autoMoveThread = std::make_unique<std::thread>(&GameManager::UpdateAutoMove, this);
-        autoMoveThread->detach();
+        autoMoveThread->detach(); // 分离线程
     }
 }
 
 void GameManager::UpdateAutoMove()
 {
-    while (autoMove)
+    try
     {
-        std::this_thread::sleep_for(autoMoveInterval);
-        if (CheckCollision())
+        while (true)
         {
-            GameOver();
+            std::lock_guard<std::mutex> lock(mutex_);
+            if (!autoMove)
+            {
+                break;
+            }
+            PrintUtil::ClearScreen();
+            UpdateMap();
+            snake.Move();
+            if (CheckCollision())
+            {
+                GameOver();
+            }
+            std::this_thread::sleep_for(autoMoveInterval);
         }
-        snake.Move();
-        PrintUtil::ClearScreen();
-        UpdateMap();
+    }
+    catch (const std::exception &e)
+    {
+        gameOver = true; // 确保在异常情况下也能结束游戏
+    }
+    catch (...)
+    {
+        gameOver = true; // 确保在未知异常情况下也能结束游戏
     }
 }
 
 // 安全停止函数
 void GameManager::StopAutoMove()
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     autoMove = false;
-    if (autoMoveThread && autoMoveThread->joinable())
-    {
-        autoMoveThread->join();
-    }
     autoMoveThread.reset();
 }
 
 GameManager::~GameManager()
 {
-    StopAutoMove(); // 确保在析构时停止自动移动线程
+    // StopAutoMove(); // 确保在析构时停止自动移动线程
 }

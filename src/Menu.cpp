@@ -2,6 +2,7 @@
 #include <conio.h>
 #include <GameManager.h>
 #include <iomanip>
+#include "LogUtil.h"
 
 Menu::Menu()
 {
@@ -149,9 +150,19 @@ void Menu::SelectMainMenu()
 			{
 			case 0:
 			{
-				Managers::GameManager gameManager(10, 10);
-				gameManager.GameStart();
-				cout << "<- Game Start" << endl;
+				try
+				{
+					Managers::GameManager gameManager(10, 10);
+					gameManager.GameStart();
+				}
+				catch (const std::exception &e)
+				{
+					spdlog::error("Exception: {}", e.what());
+				}
+				catch (...) // 捕获其他异常
+				{
+					spdlog::error("Unknown exception!");
+				}
 				break;
 			}
 			case 1:
