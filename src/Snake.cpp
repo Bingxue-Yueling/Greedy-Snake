@@ -12,7 +12,7 @@ Snake::~Snake()
 bool Snake::CheckCollision()
 {
     auto head = snakeBody.front();
-    for (size_t i = 1; i < snakeBody.size(); ++i)
+    for (size_t i = 4; i < snakeBody.size(); ++i)
     {
         // 检查蛇头是否碰到自己
         if (head == snakeBody[i])

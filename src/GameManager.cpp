@@ -1,6 +1,5 @@
 #include "GameManager.h"
 #include "PrintUtil.h"
-#include "LogUtil.h"
 
 using namespace Managers;
 using namespace Utils;
@@ -25,6 +24,7 @@ void GameManager::GameOver()
     StopAutoMove();
     gameOver.store(true); // 设置游戏结束标志
     PrintUtil::ColorText("Game Over!", 4);
+    _getch(); // 等待用户按键
     PrintUtil::ClearScreen();
 }
 
@@ -45,22 +45,18 @@ void GameManager::GameUpdate()
             case 'w':
                 snake.dir[0] = -1;
                 snake.dir[1] = 0;
-                PrintUtil::ColorText("Snake direction changed to up\n", 3);
                 break;
             case 's':
                 snake.dir[0] = 1;
                 snake.dir[1] = 0;
-                PrintUtil::ColorText("Snake direction changed to down\n", 3);
                 break;
             case 'a':
                 snake.dir[0] = 0;
                 snake.dir[1] = -1;
-                PrintUtil::ColorText("Snake direction changed to left\n", 3);
                 break;
             case 'd':
                 snake.dir[0] = 0;
                 snake.dir[1] = 1;
-                PrintUtil::ColorText("Snake direction changed to right\n", 3);
                 break;
             case 'q':
                 return; // 退出游戏
@@ -94,10 +90,16 @@ void GameManager::UpdateMap()
             {
                 PrintUtil::ColorText("◈", 2);
             }
-            // 检查蛇身是否在当前位置
-            else if (std::find(snake.snakeBody.begin(), snake.snakeBody.end(), std::make_pair(i, j)) != snake.snakeBody.end())
+            // 检查蛇头是否在当前位置
+            else if (snake.GetHead() == std::make_pair(i, j))
             {
-                PrintUtil::ColorText("◉", 1); // 绘制蛇身
+                PrintUtil::ColorText("◉", 1); // 绘制蛇头
+            }
+
+            // 检查蛇身是否在当前位置
+            else if (std::find(snake.snakeBody.begin() + 1, snake.snakeBody.end(), std::make_pair(i, j)) != snake.snakeBody.end())
+            {
+                PrintUtil::ColorText("◯", 1); // 绘制蛇身
             }
             else
             {
@@ -172,7 +174,7 @@ void GameManager::UpdateAutoMove()
     }
     catch (...)
     {
-        spdlog::error("An unknown exception occurred in the auto move thread.");
+        std::cout << "An unknown exception occurred in the auto move thread." << std::endl;
         gameOver.store(true); // 确保在未知异常情况下也能结束游戏
     }
 }

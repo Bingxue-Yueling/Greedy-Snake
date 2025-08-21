@@ -2,7 +2,6 @@
 #include <conio.h>
 #include <GameManager.h>
 #include <iomanip>
-#include "LogUtil.h"
 
 Menu::Menu()
 {
