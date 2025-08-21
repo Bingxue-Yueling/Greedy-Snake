@@ -132,50 +132,54 @@ void Menu::SelectMainMenu()
 	UpdateMainMenu(selectId, true);
 	while (true)
 	{
-		char key = _getch();
-		Utils::PrintUtil::ClearScreen();
-		switch (key)
+		if (_kbhit()) // 检查是否有键盘输入
 		{
-		case 'w':
-			selectId += mainMenu.size() - 1;
-			selectId %= mainMenu.size();
-			break;
-		case 's':
-			selectId++;
-			selectId %= mainMenu.size();
-			break;
-		case '\r':
-		{
-			switch (selectId)
+			char key = _getch();
+			Utils::PrintUtil::ClearScreen();
+			switch (key)
 			{
-			case 0:
+			case 'w':
+				selectId += mainMenu.size() - 1;
+				selectId %= mainMenu.size();
+				break;
+			case 's':
+				selectId++;
+				selectId %= mainMenu.size();
+				break;
+			case '\r':
 			{
-				try
+				switch (selectId)
 				{
-					Managers::GameManager gameManager(10, 10);
-					gameManager.GameStart();
+				case 0:
+				{
+					{
+						Managers::GameManager gameManager(10, 10);
+						gameManager.GameStart();
+					}
+					break;
 				}
-				catch (const std::exception &e)
+				case 1:
 				{
-					spdlog::error("Exception: {}", e.what());
+					SelectOptionMenu();
+					break;
 				}
-				catch (...) // 捕获其他异常
+				case 2:
 				{
-					spdlog::error("Unknown exception!");
+					SelectHelpMenu();
+					break;
+				}
+				case 3:
+					UpdateMainMenu(selectId);
+					cout << endl;
+					cout << "Please press any key to exit..." << endl;
+					_getch(); // Wait for any key press before exiting
+					return;	  // Exit the program
+				default:
+					break;
 				}
 				break;
 			}
-			case 1:
-			{
-				SelectOptionMenu();
-				break;
-			}
-			case 2:
-			{
-				SelectHelpMenu();
-				break;
-			}
-			case 3:
+			case 'q':
 				UpdateMainMenu(selectId);
 				cout << endl;
 				cout << "Please press any key to exit..." << endl;
@@ -184,18 +188,8 @@ void Menu::SelectMainMenu()
 			default:
 				break;
 			}
-			break;
-		}
-		case 'q':
 			UpdateMainMenu(selectId);
-			cout << endl;
-			cout << "Please press any key to exit..." << endl;
-			_getch(); // Wait for any key press before exiting
-			return;	  // Exit the program
-		default:
-			break;
 		}
-		UpdateMainMenu(selectId);
 	}
 }
 
@@ -284,7 +278,7 @@ void Menu::WriteChar(short x, short y, const string *str)
 	// 获取屏幕输出句柄
 	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	// 获取输出坐标
-	SetConsoleCursorPosition(hOut, {y, x});
+	SetConsoleCursorPosition(hOut, {x, y});
 
 	// 输出相应的字符
 	cout << *str;

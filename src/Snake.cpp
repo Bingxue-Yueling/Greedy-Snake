@@ -15,7 +15,7 @@ bool Snake::CheckCollision()
     for (size_t i = 1; i < snakeBody.size(); ++i)
     {
         // 检查蛇头是否碰到自己
-        if (head == snakeBody[i] && i == 1)
+        if (head == snakeBody[i])
         {
             return true; // 碰撞
         }
