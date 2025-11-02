@@ -1,6 +1,8 @@
 #include "GameManager.h"
 #include "PrintUtil.h"
 
+#include "LogUtil.h"
+
 using namespace Managers;
 using namespace Utils;
 
@@ -10,6 +12,7 @@ GameManager::GameManager(int r, int c) : row(r), col(c),
                                          autoMove(true),
                                          autoMoveInterval(std::chrono::milliseconds(1000))
 {
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
 }
 
 void GameManager::GameStart()
@@ -23,38 +26,82 @@ void GameManager::GameOver()
 {
     StopAutoMove();
     gameOver.store(true); // 设置游戏结束标志
-    PrintUtil::ColorText("Game Over!", 4);
-    _getch(); // 等待用户按键
-    PrintUtil::ClearScreen();
 }
 
 void GameManager::GameUpdate()
 {
     while (true)
     {
+        if (gameOver.load())
+        {
+            // // 清空输入缓冲区中的所有残留按键
+            // while (_kbhit())
+            // {
+            //     _getch();
+            // }
+            PrintUtil::ColorText("Game Over!", 4);
+            _getch(); // 等待用户按键
+            PrintUtil::ClearScreen();
+            break;
+        }
         if (_kbhit())
         {
             char key = _getch();
             // std::lock_guard<std::mutex> lock(mutex_); // 保证线程安全
-            if (gameOver.load())
-            {
-                break;
-            }
+
             switch (key)
             {
             case 'w':
+                if (snake.snakeBody.size() > 1)
+                {
+                    int x = snake.snakeBody[0].first - snake.snakeBody[1].first;
+                    int y = snake.snakeBody[0].second - snake.snakeBody[1].second;
+                    if (x == 1 && y == 0)
+                    {
+                        break; // 防止直接反向移动
+                    }
+                }
+
                 snake.dir[0] = -1;
                 snake.dir[1] = 0;
                 break;
             case 's':
+                if (snake.snakeBody.size() > 1)
+                {
+                    int x = snake.snakeBody[0].first - snake.snakeBody[1].first;
+                    int y = snake.snakeBody[0].second - snake.snakeBody[1].second;
+                    if (x == -1 && y == 0)
+                    {
+                        break; // 防止直接反向移动
+                    }
+                }
                 snake.dir[0] = 1;
                 snake.dir[1] = 0;
                 break;
             case 'a':
+                if (snake.snakeBody.size() > 1)
+                {
+                    int x = snake.snakeBody[0].first - snake.snakeBody[1].first;
+                    int y = snake.snakeBody[0].second - snake.snakeBody[1].second;
+                    if (x == 0 && y == 1)
+                    {
+                        break; // 防止直接反向移动
+                    }
+                }
+
                 snake.dir[0] = 0;
                 snake.dir[1] = -1;
                 break;
             case 'd':
+                if (snake.snakeBody.size() > 1)
+                {
+                    int x = snake.snakeBody[0].first - snake.snakeBody[1].first;
+                    int y = snake.snakeBody[0].second - snake.snakeBody[1].second;
+                    if (x == 0 && y == -1)
+                    {
+                        break; // 防止直接反向移动
+                    }
+                }
                 snake.dir[0] = 0;
                 snake.dir[1] = 1;
                 break;
@@ -120,8 +167,12 @@ void GameManager::UpdateMap()
 
 void GameManager::NextTarget()
 {
-    target.first = rand() % row;
-    target.second = rand() % col;
+    // // 确保目标不出现在蛇身上
+    do
+    {
+        target.first = rand() % row;
+        target.second = rand() % col;
+    } while (std::find(snake.snakeBody.begin(), snake.snakeBody.end(), target) != snake.snakeBody.end());
 }
 
 bool GameManager::CheckCollision()
