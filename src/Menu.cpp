@@ -152,7 +152,7 @@ void Menu::SelectMainMenu()
 				case 0:
 				{
 					{
-						Managers::GameManager gameManager(10, 10);
+						Managers::GameManager gameManager(mapSize[0], mapSize[1]);
 						gameManager.GameStart();
 					}
 					break;
@@ -214,17 +214,25 @@ void Menu::SelectOptionMenu()
 			switch (selectId)
 			{
 			case 0:
+				mapSize[0] = 10;
+				mapSize[1] = 10;
+				cout << "设置完成！" << endl;
 				_getch();
+				Utils::PrintUtil::ClearScreen();
 				return;
 			case 1:
 				mapSize[0] = 20;
 				mapSize[1] = 20;
+				cout << "设置完成！" << endl;
 				_getch();
+				Utils::PrintUtil::ClearScreen();
 				return;
 			case 2:
 				mapSize[0] = 30;
 				mapSize[1] = 30;
+				cout << "设置完成！" << endl;
 				_getch();
+				Utils::PrintUtil::ClearScreen();
 				return;
 			case 3:
 				return;
