@@ -1,8 +1,6 @@
 #include "GameManager.h"
 #include "PrintUtil.h"
 
-#include "LogUtil.h"
-
 using namespace Managers;
 using namespace Utils;
 
